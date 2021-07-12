@@ -15,6 +15,7 @@ solc_select_dir = home_dir.joinpath(".solc-select")
 artifacts_dir = solc_select_dir.joinpath("artifacts")
 Path.mkdir(artifacts_dir, parents=True, exist_ok=True)
 
+
 def halt_old_architecture(version: str):
     if not Path.is_file(artifacts_dir.joinpath(f"solc-{version}", f"solc-{version}")):
         print("solc-select is out of date. Please run `solc-select update`")
@@ -109,13 +110,17 @@ def is_older_windows(version):
 
 
 def verify_checksum(version):
-    list_json = urllib.request.urlopen(f"https://binaries.soliditylang.org/{soliditylang_platform()}/list.json").read()
+    list_json = urllib.request.urlopen(
+        f"https://binaries.soliditylang.org/{soliditylang_platform()}/list.json"
+    ).read()
     builds = json.loads(list_json)["builds"]
     matches = list(filter(lambda b: b["version"] == version, builds))
-    if not matches or not matches[0]['sha256']:
-        raise argparse.ArgumentTypeError(f"Error: Unable to retrieve checksum for {soliditylang_platform()} - {version}" )
+    if not matches or not matches[0]["sha256"]:
+        raise argparse.ArgumentTypeError(
+            f"Error: Unable to retrieve checksum for {soliditylang_platform()} - {version}"
+        )
 
-    soliditylang_hash = matches[0]['sha256']
+    soliditylang_hash = matches[0]["sha256"]
 
     ## calculate sha256 of local file
     with open(artifacts_dir.joinpath(f"solc-{version}", f"solc-{version}"), "rb") as f:
@@ -123,7 +128,9 @@ def verify_checksum(version):
         local_file_hash = f"0x{hashlib.sha256(file).hexdigest()}"
 
     if soliditylang_hash != local_file_hash:
-        raise argparse.ArgumentTypeError(f"Error: Checksum mismatch {soliditylang_platform()} - {version}")
+        raise argparse.ArgumentTypeError(
+            f"Error: Checksum mismatch {soliditylang_platform()} - {version}"
+        )
 
 
 def get_url(version, artifact):
